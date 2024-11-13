@@ -1,0 +1,14 @@
+C:\Users\ivona\OneDrive\Desktop\Internship-2-C-Sharp\Internship-2-C-Sharp\obj\Debug\net8.0\Internship-2-C-Sharp.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\ivona\OneDrive\Desktop\Internship-2-C-Sharp\Internship-2-C-Sharp\obj\Debug\net8.0\Internship-2-C-Sharp.AssemblyInfoInputs.cache
+C:\Users\ivona\OneDrive\Desktop\Internship-2-C-Sharp\Internship-2-C-Sharp\obj\Debug\net8.0\Internship-2-C-Sharp.AssemblyInfo.cs
+C:\Users\ivona\OneDrive\Desktop\Internship-2-C-Sharp\Internship-2-C-Sharp\obj\Debug\net8.0\Internship-2-C-Sharp.csproj.CoreCompileInputs.cache
+C:\Users\ivona\OneDrive\Desktop\Internship-2-C-Sharp\Internship-2-C-Sharp\bin\Debug\net8.0\Internship-2-C-Sharp.exe
+C:\Users\ivona\OneDrive\Desktop\Internship-2-C-Sharp\Internship-2-C-Sharp\bin\Debug\net8.0\Internship-2-C-Sharp.deps.json
+C:\Users\ivona\OneDrive\Desktop\Internship-2-C-Sharp\Internship-2-C-Sharp\bin\Debug\net8.0\Internship-2-C-Sharp.runtimeconfig.json
+C:\Users\ivona\OneDrive\Desktop\Internship-2-C-Sharp\Internship-2-C-Sharp\bin\Debug\net8.0\Internship-2-C-Sharp.dll
+C:\Users\ivona\OneDrive\Desktop\Internship-2-C-Sharp\Internship-2-C-Sharp\bin\Debug\net8.0\Internship-2-C-Sharp.pdb
+C:\Users\ivona\OneDrive\Desktop\Internship-2-C-Sharp\Internship-2-C-Sharp\obj\Debug\net8.0\Internship-2-C-Sharp.dll
+C:\Users\ivona\OneDrive\Desktop\Internship-2-C-Sharp\Internship-2-C-Sharp\obj\Debug\net8.0\refint\Internship-2-C-Sharp.dll
+C:\Users\ivona\OneDrive\Desktop\Internship-2-C-Sharp\Internship-2-C-Sharp\obj\Debug\net8.0\Internship-2-C-Sharp.pdb
+C:\Users\ivona\OneDrive\Desktop\Internship-2-C-Sharp\Internship-2-C-Sharp\obj\Debug\net8.0\Internship-2-C-Sharp.genruntimeconfig.cache
+C:\Users\ivona\OneDrive\Desktop\Internship-2-C-Sharp\Internship-2-C-Sharp\obj\Debug\net8.0\ref\Internship-2-C-Sharp.dll
