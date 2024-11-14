@@ -4,7 +4,7 @@ using System.Linq;
 
 class Program
 {
-    static List<User> users = new List<User>(); //instanca klase korisnici
+    static List<Dictionary<string, object>> users = new List<Dictionary<string, object>>();
 
     //GLOBALNE varijable za izbornike
     static Dictionary<string, Action> MainMenu = new Dictionary<string, Action>();
@@ -81,7 +81,7 @@ class Program
             Console.ReadKey();
             return;
         }
-        if (users.Any(u => u.Id == id))
+        if (users.Any(u => (int)u["Id"] == id))
         {
             Console.WriteLine("Korisnik s tim ID-om već postoji!");
             Console.ReadKey();
@@ -89,10 +89,10 @@ class Program
         }
 
         Console.WriteLine("Unesite ime korisnika: ");
-        string name = Console.ReadLine();
+        string name = Console.ReadLine() ?? string.Empty;
 
         Console.WriteLine("Unesite prezime korisnika: ");
-        string surname = Console.ReadLine();
+        string surname = Console.ReadLine() ?? string.Empty;
 
         Console.WriteLine("Unesite datum rođenja korisnika (dd/mm/yyyy): ");
         DateTime dateOfBirth;
@@ -103,7 +103,14 @@ class Program
             return;
         }
 
-        var newUser = new User(id, name, surname, dateOfBirth);
+        var newUser = new Dictionary<string, object>
+        {
+            { "Id", id },
+            { "Name", name },
+            { "Surname", surname },
+            { "DateOfBirth", dateOfBirth },
+            { "Accounts", new List<Dictionary<string, object>>() }
+        };
         users.Add(newUser);
 
         Console.WriteLine("Korisnik uspješno dodan!");
@@ -115,13 +122,18 @@ class Program
         Console.WriteLine("Odaberite način brisanja korisnika: ");
         Console.WriteLine("a) Po ID-u");
         Console.WriteLine("b) Po imenu i prezimenu");
-        string choice = Console.ReadLine();
+        string choice = Console.ReadLine() ?? string.Empty;
 
         if (choice == "a" || choice == "A")
         {
             Console.WriteLine("Unesite ID korisnika kojeg želite izbrisati: ");
-            int id = int.Parse(Console.ReadLine());
-            var userToDelete = users.FirstOrDefault(u => u.Id == id);
+            if (!int.TryParse(Console.ReadLine(), out int id))
+            {
+                Console.WriteLine("Neispravan ID.");
+                Console.ReadKey();
+                return;
+            }
+            var userToDelete = users.FirstOrDefault(u => (int)u["Id"] == id);
             if (userToDelete != null)
             {
                 users.Remove(userToDelete);
@@ -135,11 +147,11 @@ class Program
         else if (choice == "b" || choice == "B")
         {
             Console.WriteLine("Unesite ime korisnika za brisanje:");
-            string name = Console.ReadLine();
+            string name = Console.ReadLine() ?? string.Empty;
             Console.WriteLine("Unesite prezime korisnika za brisanje:");
-            string surname = Console.ReadLine();
+            string surname = Console.ReadLine() ?? string.Empty;
 
-            var userToDelete = users.FirstOrDefault(u => u.Name == name && u.Surname == surname);
+            var userToDelete = users.FirstOrDefault(u => (string)u["Name"] == name && (string)u["Surname"] == surname);
             if (userToDelete != null)
             {
                 users.Remove(userToDelete);
@@ -156,29 +168,27 @@ class Program
 
     static void EditUser()
     {
-        Console.WriteLine("Odaberite način uređivanja korisnika: ");
-        Console.WriteLine("a) Po ID-u");
-        string choice = Console.ReadLine();
-
-        if (choice == "a" || choice == "A")
+        Console.WriteLine("Unesite ID korisnika kojeg želite urediti:");
+        if (!int.TryParse(Console.ReadLine(), out int id))
         {
-            Console.WriteLine("Unesite ID korisnika kojeg želite urediti:");
-            int id = int.Parse(Console.ReadLine());
-            var userToEdit = users.FirstOrDefault(u => u.Id == id);
-            if (userToEdit != null)
-            {
-                Console.WriteLine($"Unesite novo ime za korisnika {userToEdit.Name}: ");
-                userToEdit.Name = Console.ReadLine();
+            Console.WriteLine("Neispravan ID.");
+            Console.ReadKey();
+            return;
+        }
+        var userToEdit = users.FirstOrDefault(u => (int)u["Id"] == id);
+        if (userToEdit != null)
+        {
+            Console.WriteLine($"Unesite novo ime za korisnika {userToEdit["Name"]}: ");
+            userToEdit["Name"] = Console.ReadLine() ?? string.Empty;
 
-                Console.WriteLine($"Unesite novo prezime za korisnika {userToEdit.Surname}: ");
-                userToEdit.Surname = Console.ReadLine();
+            Console.WriteLine($"Unesite novo prezime za korisnika {userToEdit["Surname"]}: ");
+            userToEdit["Surname"] = Console.ReadLine() ?? string.Empty;
 
-                Console.WriteLine("Korisnik uspješno uređen!");
-            }
-            else
-            {
-                Console.WriteLine("Korisnik s tim ID-om nije pronađen!");
-            }
+            Console.WriteLine("Korisnik uspješno uređen!");
+        }
+        else
+        {
+            Console.WriteLine("Korisnik s tim ID-om nije pronađen!");
         }
 
         Console.ReadKey();
@@ -190,71 +200,45 @@ class Program
         Console.WriteLine("a) Svi korisnici abecedno po prezimenu");
         Console.WriteLine("b) Svi korisnici stariji od 30 godina");
         Console.WriteLine("c) Svi korisnici koji imaju barem jedan račun u minusu");
-        string choice = Console.ReadLine();
+        string choice = Console.ReadLine() ?? string.Empty;
 
         if (choice == "a" || choice == "A")
         {
-            var sortedUsers = users.OrderBy(u => u.Surname).ToList();
+            var sortedUsers = users.OrderBy(u => (string)u["Surname"]).ToList();
             foreach (var user in sortedUsers)
             {
-                Console.WriteLine($"{user.Id} - {user.Name} - {user.Surname} - {user.DateOfBirth}");
+                Console.WriteLine($"{user["Id"]} - {user["Name"]} - {user["Surname"]} - {user["DateOfBirth"]}");
             }
         }
         else if (choice == "b" || choice == "B")
         {
-            var olderThan30 = users.Where(u => u.Age > 30).ToList();
-            foreach (var user in olderThan30)
+            foreach (var u in users)
             {
-                Console.WriteLine($"{user.Id} - {user.Name} {user.Surname}, {user.Age} godina");
+                int age = DateTime.Now.Year - ((DateTime)u["DateOfBirth"]).Year;
+                if (age > 30)
+                {
+                    Console.WriteLine($"{u["Id"]} - {u["Name"]} {u["Surname"]}, {age} years old");
+                }
             }
         }
         else if (choice == "c" || choice == "C")
         {
-            var usersWithNegativeBalance = users.Where(u => u.Accounts.Any(a => a.Balance < 0)).ToList();
+            var usersWithNegativeBalance = users.Where(u => ((List<Dictionary<string, object>>)u["Accounts"]).Any(a => (decimal)a["Balance"] < 0)).ToList();
+
             foreach (var user in usersWithNegativeBalance)
             {
-                Console.WriteLine($"{user.Id} - {user.Name} {user.Surname}"); //ode prikazat stanje na racunu jos?
+                Console.WriteLine($"{user["Id"]} - {user["Name"]} {user["Surname"]}");
+
+                var accounts = (List<Dictionary<string, object>>)user["Accounts"];
+                foreach (var account in accounts)
+                {
+                    Console.WriteLine($"  Account Number: {account["AccountNumber"]}, Balance: {account["Balance"]}");
+                }
             }
+            Console.ReadKey();
         }
 
         Console.ReadKey();
     }
 
 }//class Program
-
-
-//OSTALE KLASE
-public class User
-{
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public string Surname { get; set; }
-    public DateTime DateOfBirth { get; set; }
-    public List<Account> Accounts { get; set; } = new List<Account>();
-
-    public int Age => DateTime.Now.Year - DateOfBirth.Year;
-
-    //konstruktor
-    public User(int id, string name, string surname, DateTime dateOfBirth)
-    {
-        Id = id;
-        Name = name;
-        Surname = surname;
-        DateOfBirth = dateOfBirth;
-    }
-
-}//User
-
-public class Account
-{
-    public int AccountNumber { get; set; }
-    public decimal Balance { get; set; }
-
-    //konstruktor
-    public Account(int accountNumber, decimal balance)
-    {
-        AccountNumber = accountNumber;
-        Balance = balance;
-    }
-
-}//Account
