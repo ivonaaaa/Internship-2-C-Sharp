@@ -1,13 +1,13 @@
 # INTERNSHIP
 ## SECOND ASSIGNMENT
 
-##Financial Management App
+<h3>Financial Management App</h3>
 This is a C# console application designed to help users manage their financial transactions more easily. The project focuses on practicing the usage of the C# language, including working with basic data structures like List and Dictionary. It is an educational project built to enhance understanding of C# programming concepts.
-##Features
-- user accounts
-- account management
-- transaction management
-- financial reporting
+<h3>Features</h3>
+<li>user accounts</li>
+<li>account management</li>
+<li>transaction management</li>
+<li>financial reporting</li>
 
 ### Installation
 To get started with this project, you need to have the following installed on your machine:
