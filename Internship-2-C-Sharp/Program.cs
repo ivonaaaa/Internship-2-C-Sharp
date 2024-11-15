@@ -15,7 +15,7 @@ class Program
     static Dictionary<string, Action> AccountsMenu = new Dictionary<string, Action>();
 
     //GLAVNI PROGRAM MAIN
-    static void Main()
+    static void Main(string[] args)
     {
         InitializeData();
 
@@ -107,7 +107,6 @@ class Program
 
         Console.WriteLine($"Računi za korisnika {user["Name"]} {user["Surname"]}:");
         int i = 1;
-
         foreach (var account in accounts)
         {
             Console.WriteLine($"{i}. {account["AccountType"]}: {account["Balance"]} EUR");
@@ -317,7 +316,7 @@ class Program
                 var accounts = (List<Dictionary<string, object>>)user["Accounts"];
                 foreach (var account in accounts)
                 {
-                    Console.WriteLine($"Stanje na računu: {account["Balance"]}");
+                    Console.WriteLine($"Stanje na računu {account["AccountType"]}: {account["Balance"]}");
                 }
             }
             Console.ReadKey();
@@ -363,18 +362,20 @@ class Program
             return;
         }
 
-        var transactions = selectedAccount.ContainsKey("Transactions")
-            ? selectedAccount["Transactions"] as List<Dictionary<string, object>>
-            : new List<Dictionary<string, object>>();
+        if (!selectedAccount.ContainsKey("Transactions"))
+        {
+            // Initialize transactions list if not present
+            selectedAccount["Transactions"] = new List<Dictionary<string, object>>();
+        }
 
-        // Ensure that "Transactions" is not null and contains valid dictionaries
-        if (transactions != null && transactions.Any(t => t.ContainsKey("Id") && (int)t["Id"] == transactionId))
+        var transactions = selectedAccount["Transactions"] as List<Dictionary<string, object>>;
+
+        if (transactions.Any(t => t.ContainsKey("Id") && (int)t["Id"] == transactionId))
         {
             Console.WriteLine("Transakcija s tim ID-om već postoji. Pokušajte s drugim ID-em.");
             Console.ReadKey();
             return;
         }
-
 
         Console.WriteLine("Unesite iznos transakcije (pozitivno za prihod, negativno za rashod):");
         if (!decimal.TryParse(Console.ReadLine(), out decimal amount))
@@ -403,11 +404,11 @@ class Program
         List<string> categories = new List<string>();
         if (type == "prihod")
         {
-            categories = new List<string> { "Plaća", "Stipendija", "Poklon", "Bonus", "Uplata" };
+            categories = new List<string> { "placa", "stipendija", "poklon", "bonus", "uplata" };
         }
         else if (type == "rashod")
         {
-            categories = new List<string> { "Hrana", "Struja", "Voda", "Članarina", "Telefon" };
+            categories = new List<string> { "internet", "struja", "voda", "clanarina", "isplata" };
         }
 
         Console.WriteLine("Odaberite kategoriju transakcije:");
@@ -437,7 +438,7 @@ class Program
         };
 
         transactions.Add(transaction);
-        selectedAccount["Transactions"] = transactions;
+        selectedAccount["Balance"] = (decimal)selectedAccount["Balance"] + amount;
 
         Console.WriteLine("Transakcija uspješno dodana!");
         Console.ReadKey();
@@ -592,27 +593,34 @@ class Program
         var transactions = selectedAccount.ContainsKey("Transactions") ? selectedAccount["Transactions"] as List<Dictionary<string, object>> : new List<Dictionary<string, object>>();
 
         int transactionId = -1;
-        while (transactionId < 0)
+        while (true) // Keep asking until a valid transaction ID is entered
         {
             Console.WriteLine("Unesite ID transakcije koju želite urediti:");
-            if (!int.TryParse(Console.ReadLine(), out transactionId))
+            string input = Console.ReadLine();
+
+            // Check if the input is valid
+            if (string.IsNullOrWhiteSpace(input) || !int.TryParse(input, out transactionId))
             {
-                Console.WriteLine("Neispravan unos ID-a. Pokušajte ponovno.");
+                Console.WriteLine("Krivi tip unešenog podatka! Pokušajte ponovno.");
                 continue;
             }
 
+            // Check if the transaction exists
             var transactionToEdit = transactions.FirstOrDefault(t => (int)t["Id"] == transactionId);
             if (transactionToEdit == null)
             {
                 Console.WriteLine("Transakcija s tim ID-em ne postoji. Pokušajte ponovno.");
-                transactionId = -1;
+                continue; // Ask again for valid input
             }
+
+            // If we find the transaction, break the loop
+            break;
         }
 
         var transaction = transactions.First(t => (int)t["Id"] == transactionId);
 
         Console.WriteLine($"Trenutni iznos transakcije: {transaction["Amount"]} EUR");
-        Console.WriteLine("Unesite novi iznos transakcije (pozitivno za prihod, negativno za rashod):");
+        Console.WriteLine("Unesite novi iznos transakcije:");
         if (decimal.TryParse(Console.ReadLine(), out decimal newAmount))
         {
             transaction["Amount"] = newAmount;
@@ -646,11 +654,11 @@ class Program
         List<string> categories = new List<string>();
         if (newType == "prihod")
         {
-            categories = new List<string> { "Plaća", "Stipendija", "Poklon", "Bonus", "Udio u dobiti" };
+            categories = new List<string> { "placa", "stipendija", "poklon", "bonus", "uplata" };
         }
         else if (newType == "rashod")
         {
-            categories = new List<string> { "Hrana", "Struja", "Voda", "Članarina", "Telefon" };
+            categories = new List<string> { "internet", "struja", "voda", "clanarina", "isplata" };
         }
 
         Console.WriteLine($"Trenutna kategorija transakcije: {transaction["Category"]}");
@@ -692,6 +700,7 @@ class Program
         if (transactions.Count == 0)
         {
             Console.WriteLine("Nema pohranjenih transakcija!");
+            Console.ReadKey();
             return;
         }
 
@@ -781,6 +790,7 @@ class Program
         {
             Console.WriteLine($"{transaction["Type"]} - {transaction["Amount"]} EUR - {transaction["Description"]} - {transaction["Category"]} - {((DateTime)transaction["Date"]).ToString("dd/MM/yyyy HH:mm")}");
         }
+        Console.ReadKey();
         Console.WriteLine();
 
     }//ShowTransactions
@@ -840,6 +850,7 @@ class Program
         {
             Console.WriteLine("Upozorenje: Račun je u minusu!");
         }
+        Console.ReadKey();
     }
 
     // b) Broj ukupnih transakcija
@@ -847,6 +858,7 @@ class Program
     {
         int totalTransactions = transactions.Count;
         Console.WriteLine($"Ukupan broj transakcija: {totalTransactions}");
+        Console.ReadKey();
     }
 
     // c) Ukupan iznos prihoda i rashoda za odabrani mjesec i godinu
@@ -867,6 +879,7 @@ class Program
 
         Console.WriteLine($"Ukupni prihodi za {month}/{year}: {totalIncome} EUR");
         Console.WriteLine($"Ukupni rashodi za {month}/{year}: {totalExpense} EUR");
+        Console.ReadKey();
     }
 
     // d) Postotak udjela rashoda za odabranu kategoriju
@@ -888,6 +901,7 @@ class Program
 
         decimal percentage = (categoryExpenses / totalExpenses) * 100;
         Console.WriteLine($"Postotak rashoda za kategoriju '{category}': {percentage:F2}%");
+        Console.ReadKey();
     }
 
     // e) Prosječni iznos transakcije za odabrani mjesec i godinu
@@ -910,6 +924,7 @@ class Program
 
         decimal average = transactionsForMonthYear.Average(t => (decimal)t["Amount"]);
         Console.WriteLine($"Prosječni iznos transakcije za {month}/{year}: {average:F2} EUR");
+        Console.ReadKey();
     }
 
     // f) Prosječni iznos transakcije za odabranu kategoriju
@@ -929,7 +944,7 @@ class Program
 
         decimal average = transactionsForCategory.Average(t => (decimal)t["Amount"]);
         Console.WriteLine($"Prosječni iznos transakcije za kategoriju '{category}': {average:F2} EUR");
-
+        Console.ReadKey();
     }
 
     //INICIJALNI PODACI
@@ -948,41 +963,41 @@ class Program
         var account1 = new Dictionary<string, object>
         {
             {"AccountType", "tekući"},
-            {"Balance", 5000.75},
+            {"Balance", 5000.75m},
             {"Transactions", new List<Dictionary<string, object>>()}
         };
 
         var account2 = new Dictionary<string, object>
         {
             {"AccountType", "žiro"},
-            {"Balance", 30.00},
+            {"Balance", 30.00m},
             {"Transactions", new List<Dictionary<string, object>>()}
         };
 
         var account3 = new Dictionary<string, object>
         {
             {"AccountType", "prepaid"},
-            {"Balance", 70.00},
+            {"Balance", 70.00m},
             {"Transactions", new List<Dictionary<string, object>>()}
         };
 
         var transaction1 = new Dictionary<string, object>
         {
             {"Id", 101},
-            {"Amount", 2000.00},
+            {"Amount", 2000.00m},
             {"Description", "Nekakava plaća"},
-            {"Type", "Prihod"},
-            {"Category", "Plaća"},
+            {"Type", "prihod"},
+            {"Category", "placa"},
             {"Date", DateTime.Now.AddMonths(-1)}
         };
 
         var transaction2 = new Dictionary<string, object>
         {
             {"Id", 102},
-            {"Amount", -150.50},
-            {"Description", "Trošak na hranu"},
-            {"Type", "Rashod"},
-            {"Category", "Hrana"},
+            {"Amount", -150.50m},
+            {"Description", "Trošak na struju"},
+            {"Type", "rashod"},
+            {"Category", "struja"},
             {"Date", DateTime.Now.AddDays(-10)}
         };
 
@@ -1006,31 +1021,31 @@ class Program
         var account4 = new Dictionary<string, object>
         {
             {"AccountType", "tekući"},
-            {"Balance", 899.00},
+            {"Balance", 899.00m},
             {"Transactions", new List<Dictionary<string, object>>()}
         };
 
         var account5 = new Dictionary<string, object>
         {
             {"AccountType", "žiro"},
-            {"Balance", 1500.00},
+            {"Balance", 1500.00m},
             {"Transactions", new List<Dictionary<string, object>>()}
         };
 
         var account6 = new Dictionary<string, object>
         {
             {"AccountType", "prepaid"},
-            {"Balance", 00.00},
+            {"Balance", 00.00m},
             {"Transactions", new List<Dictionary<string, object>>()}
         };
 
         var transaction3 = new Dictionary<string, object>
         {
             {"Id", 103},
-            {"Amount", 500.00},
+            {"Amount", 500.00m},
             {"Description", "Rođendanski poklon"},
-            {"Type", "Prihod"},
-            {"Category", "Poklon"},
+            {"Type", "prihod"},
+            {"Category", "poklon"},
             {"Date", DateTime.Now.AddDays(-38)}
         };
 
@@ -1053,41 +1068,41 @@ class Program
         var account7 = new Dictionary<string, object>
         {
             {"AccountType", "tekući"},
-            {"Balance", 2000.00},
+            {"Balance", 2000.00m},
             {"Transactions", new List<Dictionary<string, object>>()}
         };
 
         var account8 = new Dictionary<string, object>
         {
             {"AccountType", "žiro"},
-            {"Balance", -700.00},
+            {"Balance", -700.00m},
             {"Transactions", new List<Dictionary<string, object>>()}
         };
 
         var account9 = new Dictionary<string, object>
         {
             {"AccountType", "prepaid"},
-            {"Balance", 145.00},
+            {"Balance", 145.00m},
             {"Transactions", new List<Dictionary<string, object>>()}
         };
 
         var transaction4 = new Dictionary<string, object>
         {
             {"Id", 724},
-            {"Amount", 45.00},
+            {"Amount", 45.00m},
             {"Description", "Uplaćen bonus u iznosu od 45.00 EUR"},
-            {"Type", "Prihod"},
-            {"Category", "Bonus"},
+            {"Type", "prihod"},
+            {"Category", "bonus"},
             {"Date", DateTime.Now.AddDays(-60)}
         };
 
         var transaction5 = new Dictionary<string, object>
         {
             {"Id", 405},
-            {"Amount", 20.00},
+            {"Amount", 20.00m},
             {"Description", "Poklon za Božić"},
-            {"Type", "Prihod"},
-            {"Category", "Poklon"},
+            {"Type", "prihod"},
+            {"Category", "poklon"},
             {"Date", DateTime.Now.AddDays(-13)}
         };
 
